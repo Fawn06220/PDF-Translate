@@ -1,5 +1,6 @@
 from deep_translator import GoogleTranslator
-import customtkinter as ctk,threading,os,webbrowser,pymupdf,ocrmypdf
+import customtkinter as ctk,threading,os,webbrowser,pymupdf
+import ocrmypdf,ocrmypdf.data
 from PIL import Image
 import contextlib,io,pytesseract
 
@@ -207,19 +208,12 @@ class App(ctk.CTk):
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 #Pour des fichiers peu volumineux ne laissser que deskew
                 #Options : language,deskew,rotat_pages,optimize,force_ocr,output_type,progress_bar
-                ocr_lang = self.OCR_LANG_MAP.get(self.s_langue, "eng")
-                ocrmypdf.ocr(
-        self.filename,
-        'tmp/' + self.file_and_ext,
-        language=ocr_lang,
-        deskew=True,
-        rotate_pages=True,
-        optimize=2,
-        force_ocr=True,        # ← choisi ici
-        # skip_text=False      # ← ne pas combiner !
-        output_type='pdfa',
-        progress_bar=False
-    )
+                if __name__ == '__main__':  # To ensure correct behavior on Windows and macOS
+                    ocrmypdf.ocr(
+                        self.filename,
+                        'tmp/' + self.file_and_ext,        # ← choisi ici
+                         progress_bar=False
+                                 )
                 self.filename =os.getcwd()+'/tmp/'+self.file_and_ext
         # Define color "white"
         WHITE = pymupdf.pdfcolor["white"]
