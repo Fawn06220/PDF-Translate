@@ -75,6 +75,17 @@ L’application s’ouvre avec une interface graphique complète. Vous pouvez :
 
 ---
 
+
+---
+
+### 🖥 Téléchargement de la version Windows
+
+📦 **Télécharger l'archive Windows (RAR)** :  
+👉 [http://ninjaaior.free.fr/pdfocr.rar](http://ninjaaior.free.fr/pdfocr.rar)
+
+🧰 **Besoin de WinRAR pour extraire l'archive ?**  
+👉 [Télécharger WinRAR](https://www.win-rar.com/start.html?&L=10)
+
 ## 🎥 Démonstrations
 
 👉 [Voir les vidéos de démonstration ici](http://ninjaaior.free.fr/devdemos/index.html)
