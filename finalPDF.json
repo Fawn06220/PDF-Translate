@@ -76,6 +76,10 @@
   {
    "optionDest": "collect_all",
    "value": "pymupdf"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "pikepdf"
   }
  ],
  "nonPyinstallerOptions": {

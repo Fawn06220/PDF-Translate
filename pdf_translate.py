@@ -2,7 +2,8 @@ from deep_translator import GoogleTranslator
 import customtkinter as ctk,threading,os,webbrowser,pymupdf
 import ocrmypdf,ocrmypdf.data #important !
 from PIL import Image
-import contextlib,io,pytesseract
+import contextlib,io,pytesseract,subprocess
+import pikepdf
 
 class App(ctk.CTk):
     def __init__(self):
@@ -211,8 +212,8 @@ class App(ctk.CTk):
                 if __name__ == '__main__':  # To ensure correct behavior on Windows and macOS
                     ocrmypdf.ocr(
                         self.filename,
-                        'tmp/' + self.file_and_ext,        # ← choisi ici
-                         progress_bar=False
+                        'tmp/' + self.file_and_ext,
+                        progress_bar=False,
                                  )
                 self.filename =os.getcwd()+'/tmp/'+self.file_and_ext
         # Define color "white"
@@ -249,8 +250,16 @@ class App(ctk.CTk):
             self.progress_bar.set(progress_value)
             self.progress_label.configure(text=f"Progression : {int(progress_value * 100)} %")
         doc.subset_fonts()
+        doc.set_metadata({})  # Supprimer les métadonnées pour alléger le PDF
         os.makedirs("trads", exist_ok=True)
         doc.save("trads/"+self.final_name+"-"+lang_code.upper()+".pdf")
+        # Compression du PDF avec pikepdf en gardant un seul fichier
+        final_pdf_path = f"trads/{self.final_name}-{lang_code.upper()}.pdf"
+        compressed_tmp_path = final_pdf_path + ".tmp"
+        with pikepdf.open(final_pdf_path) as pdf:
+            pdf.save(compressed_tmp_path, compress_streams=True)
+        os.remove(final_pdf_path)  # Supprime le fichier non compressé
+        os.rename(compressed_tmp_path, final_pdf_path)  # Renomme le compressé proprement
         doc.close()  # <- ici, on libère le fichier
         self.progress_label.configure(text="Terminé !")
         self.del_file()
