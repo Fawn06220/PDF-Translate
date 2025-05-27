@@ -1,6 +1,6 @@
 from deep_translator import GoogleTranslator
 import customtkinter as ctk,threading,os,webbrowser,pymupdf
-import ocrmypdf,ocrmypdf.data
+import ocrmypdf,ocrmypdf.data #important !
 from PIL import Image
 import contextlib,io,pytesseract
 
