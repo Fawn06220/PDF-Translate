@@ -1,0 +1,7 @@
+customtkinter
+pytesseract
+pdf2image
+pillow
+ocrmypdf
+pymupdf
+deep-translator
