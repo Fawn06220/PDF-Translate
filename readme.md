@@ -33,13 +33,14 @@ pip install -r requirements.txt
 Fichier `requirements.txt` :
 
 ```
-customtkinter
-pytesseract
-pdf2image
-pillow
-ocrmypdf
-pymupdf
 deep-translator
+customtkinter
+pymupdf
+ocrmypdf
+pillow
+pytesseract
+pikepdf
+psutil  # si tu choisis de le garder
 ```
 
 ### 🛠 Outils externes nécessaires
