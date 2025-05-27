@@ -40,7 +40,7 @@ ocrmypdf
 pillow
 pytesseract
 pikepdf
-psutil  # si tu choisis de le garder
+psutil 
 ```
 
 ### 🛠 Outils externes nécessaires
