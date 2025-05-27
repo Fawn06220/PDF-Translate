@@ -213,7 +213,9 @@ class App(ctk.CTk):
         'tmp/' + self.file_and_ext,
         language=ocr_lang,
         deskew=True,
-        # ← choisi ici
+        rotate_pages=True,
+        optimize=2,
+        force_ocr=True,        # ← choisi ici
         # skip_text=False      # ← ne pas combiner !
         output_type='pdfa',
         progress_bar=False
@@ -262,10 +264,12 @@ class App(ctk.CTk):
         self.button_choose_file.configure(state="normal")
 
     def del_file(self):
-        location =os.getcwd()+"\\tmp"
-        path = os.path.join(location, self.file_and_ext)
-        os.remove(path)
-        os.rmdir(location)
+        if self.pdf_img==1:
+            location =os.getcwd()+"\\tmp"
+            path = os.path.join(location, self.file_and_ext)
+            os.remove(path)
+            os.rmdir(location)
+            self.pdf_img=0
 
 app = App()
 # Set as overlay
