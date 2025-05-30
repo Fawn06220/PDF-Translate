@@ -72,6 +72,7 @@
 ## 📁 Structure du projet
 
 ```
+<<<<<<< HEAD
 pdf_ocr_translate/
 │
 ├── icon/                # Icônes de l'application
@@ -86,6 +87,31 @@ pdf_ocr_translate/
 ├── pdf_translate.py     # Fichier principal de lancement (UI)
 ├── requirements.txt     # Fichier pip (à générer)
 └── README.md            # Ce fichier
+=======
+deep-translator
+customtkinter
+pymupdf
+ocrmypdf
+pillow
+pytesseract
+pikepdf
+psutil 
+```
+
+### 🛠 Outils externes nécessaires
+
+| Outil | Rôle | Lien / Emplacement |
+|-------|------|--------------------|
+| **Tesseract** | OCR principal | https://github.com/tesseract-ocr/tesseract |
+| **Poppler**   | Convertir PDF en images | https://github.com/oschwartz10612/poppler-windows |
+| **Ghostscript** | Traitement PDF | https://www.ghostscript.com/ |
+| **pngquant** *(optionnel)* | Optimisation image | https://pngquant.org/ |
+
+⚠ Assurez-vous que les exécutables sont dans le `PATH` ou définis manuellement dans le script via :
+
+```python
+os.environ["PATH"] += os.pathsep + r"C:\chemin\vers\outils"
+>>>>>>> origin/main
 ```
 
 ---
