@@ -240,7 +240,8 @@ class App(ctk.CTk):
                 try:
                     playsound("sound\\sound2.wav")
                 except Exception as e:
-                    print("Erreur audio :", e)
+                    #print("Erreur audio :", e)
+                    pass
 
             threading.Thread(target=safe_play, daemon=True).start()
 
