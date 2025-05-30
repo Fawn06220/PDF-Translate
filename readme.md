@@ -18,16 +18,6 @@
 
 ---
 
-## 🖥️ Aperçu
-
-<div align="center">
-  <img src="https://ninjaaior.free.fr/devdemos/images/pdf_translate.gif" width="600"/>
-</div>
-
-➡️ Démo complète : [ninjaaior.free.fr/devdemos/index.html](http://ninjaaior.free.fr/devdemos/index.html)
-
----
-
 ## 🧰 Technologies utilisées
 
 - `Python 3.12+`
