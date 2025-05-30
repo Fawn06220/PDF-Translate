@@ -32,6 +32,22 @@
 
 ---
 
+## 🐍 Utiliser Python
+
+Ce projet est développé en Python. Si vous ne l'avez pas encore installé, voici comment faire :
+
+### 🧑‍💻 Installation de Python
+
+1. 🌐 Rendez-vous sur [https://www.python.org/downloads/](https://www.python.org/downloads/)
+2. ⬇️ Téléchargez la version recommandée pour votre système (Windows, macOS, Linux)
+3. ✅ Pendant l'installation, cochez la case : `Add Python to PATH`
+4. 🧪 Vérifiez que Python est bien installé en ouvrant un terminal et tapant :
+   ```bash
+   python --version
+   ```
+
+---
+
 ## 📦 Installation
 
 1. **Cloner le dépôt** :
@@ -130,6 +146,16 @@ Un fichier `conf/config.json` sera généré automatiquement pour sauvegarder le
 
 **Développé par Fawn**  
 🎬 Démos vidéo : [http://ninjaaior.free.fr/devdemos/index.html](http://ninjaaior.free.fr/devdemos/index.html)
+
+---
+
+## ☕ Offrez un p'tit café au développeur ?
+
+Si cet outil vous a été utile, vous pouvez soutenir le développement (et la consommation excessive de café ☕) ici :
+
+➡️ [https://www.paypal.com/paypalme/noobpythondev](https://www.paypal.com/paypalme/noobpythondev)
+
+Un grand merci ! 💙
 
 ---
 
