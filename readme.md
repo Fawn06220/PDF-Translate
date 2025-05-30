@@ -170,6 +170,5 @@ Ce projet est open-source, sous licence MIT ou celle de ton choix.
 - [ ] Système de colorisation du bouton de sauvegarde
 - [ ] Support des fichiers DOCX
 - [ ] Drag & Drop des fichiers
-- [ ] Possibilité de sauvegarder/restaurer les zones
 - [ ] Avertissement si fichier ouvert ailleurs et Possibilité de le fermer
 
