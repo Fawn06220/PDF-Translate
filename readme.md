@@ -1,127 +1,131 @@
-# PDF & DOCX OCR Translate Tool 🇫🇷 ➡ 🌍
+# 🧾 PDF OCR Translate Tool
 
-Un outil complet de traduction automatique de fichiers PDF et DOCX (texte ou images), avec détection OCR, traduction multi-langues, interface graphique élégante et animation de don personnalisée (C-18 ❤️).
+> Un outil complet de reconnaissance de texte (OCR), de traduction, et d'édition de zones personnalisées sur des documents PDF.
 
----
+![Logo](icon/logo.png)
 
-## ✨ Fonctionnalités
+## 🚀 Fonctionnalités principales
 
-- 🔤 **OCR automatique** sur fichiers PDF image-only
-- 📝 **Traduction de fichiers texte et image** (PDF/DOCX)
-- 🌐 **Traduction multilingue** via Google Translate API
-- 🧠 **Détection de langue OCR intelligente**
-- 🧽 **Nettoyage automatique** (deskew, rotate, optimise)
-- 🎁 **Bouton de don animé (C-18)** intégré à l’interface
-- 📁 **Export PDF** du résultat traduit
-- 🎛 Interface `CustomTkinter` responsive & moderne
-
----
-
-## 📦 Prérequis
-
-### 🐍 Python
-
-- Python 3.10+ recommandé
-- Environnement virtuel (optionnel mais conseillé)
-
-### 📚 Bibliothèques Python
-
-```bash
-pip install -r requirements.txt
-```
-
-Fichier `requirements.txt` :
-
-```
-customtkinter
-pytesseract
-pdf2image
-pillow
-ocrmypdf
-pymupdf
-deep-translator
-```
-
-### 🛠 Outils externes nécessaires
-
-| Outil | Rôle | Lien / Emplacement |
-|-------|------|--------------------|
-| **Tesseract** | OCR principal | https://github.com/tesseract-ocr/tesseract |
-| **Poppler**   | Convertir PDF en images | https://github.com/oschwartz10612/poppler-windows |
-| **Ghostscript** | Traitement PDF | https://www.ghostscript.com/ |
-| **pngquant** *(optionnel)* | Optimisation image | https://pngquant.org/ |
-
-⚠ Assurez-vous que les exécutables sont dans le `PATH` ou définis manuellement dans le script via :
-
-```python
-os.environ["PATH"] += os.pathsep + r"C:\chemin\vers\outils"
-```
+- 🔍 OCR multilingue via [Tesseract](https://github.com/tesseract-ocr/tesseract)
+- 🌐 Traduction automatique via [Deep Translator (Google Translate)](https://pypi.org/project/deep-translator/)
+- ✏️ Édition manuelle de zones OCR par page
+- 💾 Export vers PDF stylisé avec superposition de texte
+- 🎨 Thème clair / sombre personnalisable
+- 📂 Ouverture automatique du dossier d’export
+- 📌 Déplacement de zones avec les flèches du clavier
+- ✅ Mode multi-zones toggleable
+- 💬 Support multilingue pour l’OCR et la traduction
 
 ---
 
-## 🚀 Lancer l'application
+## 🖥️ Aperçu
+
+<div align="center">
+  <img src="https://ninjaaior.free.fr/devdemos/images/pdf_translate.gif" width="600"/>
+</div>
+
+➡️ Démo complète : [ninjaaior.free.fr/devdemos/index.html](http://ninjaaior.free.fr/devdemos/index.html)
+
+---
+
+## 🧰 Technologies utilisées
+
+- `Python 3.12+`
+- `PyMuPDF (fitz)`
+- `pytesseract`
+- `ocrmypdf`
+- `deep_translator`
+- `PIL / Pillow`
+- `CustomTkinter`
+- `pikepdf`
+- `playsound`
+
+---
+
+## 📦 Installation
+
+1. **Cloner le dépôt** :
+   ```bash
+   git clone https://github.com/ton-utilisateur/pdf-ocr-translate.git
+   cd pdf-ocr-translate
+   ```
+
+2. **Créer un environnement virtuel (optionnel mais recommandé)** :
+   ```bash
+   python -m venv myenv
+   source myenv/bin/activate  # Linux/macOS
+   myenv\Scripts\activate     # Windows
+   ```
+
+3. **Installer les dépendances** :
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Installer Tesseract-OCR** :
+   - Télécharger depuis : https://github.com/tesseract-ocr/tesseract
+   - Installer dans un dossier `Tesseract-OCR/` à la racine du projet
+   - Ne pas oublier d'installer les langues nécessaires (`.traineddata`)
+
+---
+
+## 📁 Structure du projet
+
+```
+pdf_ocr_translate/
+│
+├── icon/                # Icônes de l'application
+├── flags/               # Drapeaux pour les langues
+├── conf/                # Configuration utilisateur
+├── trads/               # Fichiers PDF traduits (output)
+├── modules/
+│   ├── zone_editor_test.py   # Éditeur OCR personnalisé
+│   ├── theme_manager.py      # Gestion du thème global
+│   └── path_util.py          # Compatibilité PyInstaller
+│
+├── pdf_translate.py     # Fichier principal de lancement (UI)
+├── requirements.txt     # Fichier pip (à générer)
+└── README.md            # Ce fichier
+```
+
+---
+
+## ▶️ Lancer l'application
 
 ```bash
 python pdf_translate.py
 ```
 
-L’application s’ouvre avec une interface graphique complète. Vous pouvez :
-
-1. Sélectionner une langue cible
-2. Charger un fichier PDF ou DOCX
-3. Lancer la traduction avec **Go!**
-4. Voir la progression de l’analyse et de la traduction
-5. Récupérer le fichier traduit dans le dossier `trads/`
-
 ---
 
+## 🔧 Configuration
 
----
+Un fichier `conf/config.json` sera généré automatiquement pour sauvegarder le thème courant :
 
-### 🖥 Téléchargement de la version Windows
-
-📦 **Télécharger l'archive Windows (RAR)** :  
-👉 [http://ninjaaior.free.fr/pdfocr.rar](http://ninjaaior.free.fr/pdfocr.rar)
-
-🧰 **Besoin de WinRAR pour extraire l'archive ?**  
-👉 [Télécharger WinRAR](https://www.win-rar.com/start.html?&L=10)
-
-## 🎥 Démonstrations
-
-👉 [Voir les vidéos de démonstration ici](http://ninjaaior.free.fr/devdemos/index.html)
-
----
-
-## 💸 Soutenir le projet
-
-Un bouton de donation animé avec **Android 18 (C-18)** est disponible dans l’interface.
-
-Merci pour votre soutien 🙏  
-**https://www.paypal.com/paypalme/noobpythondev**
-
----
-
-## 📂 Arborescence du projet
-
-```
-pdf_translate/
-├── flags/                # Drapeaux pour les langues
-├── icon/                 # Logo et image de donation
-├── tmp/                  # Fichiers temporaires OCR
-├── trads/                # Fichiers PDF traduits exportés
-├── pdf_translate.py      # Script principal
-├── README.md             # Ce fichier
+```json
+{
+  "theme": "dark"
+}
 ```
 
 ---
 
-## 🧠 Auteur
+## ✍️ Auteurs
 
-**Créé par Fawn**  
-Date de release : 27/05/2025
+**Développé par Fawn**  
+🎬 Démos vidéo : [http://ninjaaior.free.fr/devdemos/index.html](http://ninjaaior.free.fr/devdemos/index.html)
 
 ---
 
-## 📃 Licence
+## 📜 Licence
 
-Ce projet est open-source. Utilisation personnelle ou pédagogique uniquement.
+Ce projet est open-source, sous licence MIT ou celle de ton choix.
+
+---
+
+## 📌 À faire (TODO)
+
+- [ ] Support des fichiers DOCX
+- [ ] Drag & Drop des fichiers
+- [ ] Support complet des rectangles déplacés à la souris
+- [ ] Possibilité de sauvegarder/restaurer les zones

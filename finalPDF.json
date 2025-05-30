@@ -80,6 +80,10 @@
   {
    "optionDest": "collect_all",
    "value": "pikepdf"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "psutil"
   }
  ],
  "nonPyinstallerOptions": {
