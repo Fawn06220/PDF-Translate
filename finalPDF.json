@@ -84,6 +84,26 @@
   {
    "optionDest": "collect_all",
    "value": "psutil"
+  },
+  {
+   "optionDest": "pathex",
+   "value": "C:/Users/Fawn-PC/Desktop/Python/pdf trad/modules"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "modules.zone_editor"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "modules.theme_manager"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "modules.zone_editor"
+  },
+  {
+   "optionDest": "collect_all",
+   "value": "modules.path_util"
   }
  ],
  "nonPyinstallerOptions": {
