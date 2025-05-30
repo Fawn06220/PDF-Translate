@@ -153,7 +153,7 @@ Un fichier `conf/config.json` sera généré automatiquement pour sauvegarder le
 
 Si cet outil vous a été utile, vous pouvez soutenir le développement (et la consommation excessive de café ☕) ici :
 
-➡️ [https://www.paypal.com/paypalme/noobpythondev](https://www.paypal.com/paypalme/noobpythondev)
+➡️ [![Donate](icon/donate.png)](https://www.paypal.com/paypalme/noobpythondev)
 
 Un grand merci ! 💙
 
