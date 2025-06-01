@@ -25,25 +25,23 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
             resource_path(f"icon/logo.ico")))
         self.iconphoto(False, tk.PhotoImage(
             file=resource_path(f"icon/logo.png")))
-        # self.iconbitmap()
-        # self.geometry("1300x900")
         # Empêche la redimension verticale/horizontale
         self.resizable(False, False)
         # Lance en fenetre maximize
-        self.state("zoomed")  # fonctionne sur Windows
+        #self.state("zoomed")  # fonctionne sur Windows
         self.current_theme = ThemeManager.get_theme()
         self.text_color = "black" if self.current_theme == "light" else "white"
         ThemeManager.register(self.update_theme)
         self.original_name = original_name
         self.bind("<Destroy>", self.on_close)
         self.add_mode = False  # mode "ajout de zone" désactivé au départ
-        self.selected_zone = None
-        self.drag_data = {"item": None, "text": None, "x": 0, "y": 0}
         self.pdf_path = pdf_path
         self.doc = fitz.open(pdf_path)
         self.page_index = 0
         self.scale = 1.0
         self.zones = {}
+        self.zone_widgets = {}  # Clé = page_index, valeur = dict(zone_id: frame)
+        self.zone_id_counter = 1  # ID global pour toutes les zones du document
         self.lang_map = lang_map
         self.ocr_map = ocr_map
 
@@ -114,15 +112,6 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
         self.zone_panel = ctk.CTkScrollableFrame(self, width=400, height=500)
         self.zone_panel.grid(row=1, column=1, padx=10, pady=10, sticky="n")
 
-        # Recapture de zone texte
-        self.canvas.bind("<KeyPress-Return>", self.ocr_current_zone)
-
-        # Bind clavier(fleches)
-        self.canvas.bind("<Up>", self.move_selected_zone)
-        self.canvas.bind("<Down>", self.move_selected_zone)
-        self.canvas.bind("<Left>", self.move_selected_zone)
-        self.canvas.bind("<Right>", self.move_selected_zone)
-
         # Container buttons ligne 1
         self.button_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.button_frame.grid(row=2, column=1, pady=10)
@@ -181,33 +170,7 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
                              kwargs=kwargs, daemon=True).start()
         return wrapper
 
-    @threaded
-    def ocr_current_zone(self, event=None):
-        self.canvas.focus_set()
-        if not self.selected_zone:
-            return
-
-        idx, zone = self.selected_zone
-        x0, y0, x1, y1 = zone["rect"]
-
-        # Capture image de la zone
-        pix = self.doc[self.page_index].get_pixmap()
-        img = Image.frombytes(
-            "RGB", [pix.width, pix.height], pix.samples).convert("RGB")
-        cropped = img.crop((x0, y0, x1, y1))
-        text = pytesseract.image_to_string(
-            cropped, lang=self.ocr_lang_code).strip()
-
-        # Met à jour la zone
-        self.zones[self.page_index][idx]["text"] = text
-        self.render_page(force=True)
-
     def on_zone_click(self, event):
-        if self.selection_mode:
-            messagebox.showwarning(
-                "Mode dessin actif", "Désactivez le mode dessin pour déplacer une zone.")
-            return
-
         item = self.canvas.find_closest(event.x, event.y)[0]
 
         for idx, zone in enumerate(self.zones.get(self.page_index, [])):
@@ -215,75 +178,11 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
                 self.selected_zone = (idx, zone)
                 self.canvas.focus_set()
 
-                self.canvas.itemconfig(
-                    zone["canvas_id"], outline="green", width=3)
                 for other in self.zones.get(self.page_index, []):
                     if other.get("canvas_id") != zone["canvas_id"]:
                         self.canvas.itemconfig(
                             other["canvas_id"], outline="red", width=2)
                 break
-
-    def on_drag_zone(self, event):
-        if not self.drag_data["item"]:
-            return
-
-        dx = event.x - self.drag_data["x"]
-        dy = event.y - self.drag_data["y"]
-
-        self.canvas.move(self.drag_data["item"], dx, dy)
-        if self.drag_data.get("text"):
-            self.canvas.move(self.drag_data["text"], dx, dy)
-
-        self.drag_data["x"] = event.x
-        self.drag_data["y"] = event.y
-
-        # Reset couleur du bouton
-        btn = self.zones[self.page_index][idx].get("save_button")
-        if btn:
-            btn.configure(fg_color="#1f6aa5")  # couleur CTkButton par défaut
-
-    def on_drop_zone(self, event):
-        if not self.drag_data["item"]:
-            return
-
-        item = self.drag_data["item"]
-        self.drag_data["item"] = None
-
-        coords = self.canvas.coords(item)
-        if len(coords) == 4:
-            x0, y0, x1, y1 = [int(v / self.scale) for v in coords]
-
-            for idx, zone in enumerate(self.zones.get(self.page_index, [])):
-                if zone.get("canvas_id") == item:
-                    self.zones[self.page_index][idx]["rect"] = (x0, y0, x1, y1)
-                    break
-
-    def move_selected_zone(self, event):
-        if not self.selected_zone:
-            return
-
-        idx, zone = self.selected_zone
-        dx = dy = 0
-        if event.keysym == "Left":
-            dx = -5
-        elif event.keysym == "Right":
-            dx = 5
-        elif event.keysym == "Up":
-            dy = -5
-        elif event.keysym == "Down":
-            dy = 5
-
-        # Déplacement visuel sur le canvas
-        self.canvas.move(zone["canvas_id"], dx, dy)
-        self.canvas.move(zone["canvas_id_text"], dx, dy)
-
-        # Mise à jour des coordonnées logiques
-        x0, y0, x1, y1 = zone["rect"]
-        x0 += int(dx / self.scale)
-        x1 += int(dx / self.scale)
-        y0 += int(dy / self.scale)
-        y1 += int(dy / self.scale)
-        self.zones[self.page_index][idx]["rect"] = (x0, y0, x1, y1)
 
     def change_ocr_language(self, _=None):
         selected = self.ocr_lang_var.get()
@@ -335,28 +234,36 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
         total_pages = len(self.doc)
         self.page_entry_var.set(f"{self.page_index + 1} / {total_pages}")
 
-        # Réactualiser l'état visuel du bouton
+        # Style bouton ajout de zone
         if self.selection_mode:
-            self.button_add.configure(
-                fg_color=self.button_add.cget("hover_color"))
+            self.button_add.configure(fg_color=self.button_add.cget("hover_color"))
         else:
             self.button_add.configure(fg_color="transparent")
 
+        # Affichage visuel des rectangles sur le canvas
         for i, zone in enumerate(self.zones.get(self.page_index, [])):
             x0, y0, x1, y1 = [int(v * self.scale) for v in zone["rect"]]
             item_id = self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", width=2)
-            zone_id = zone.get("id", i + 1)  # fallback en cas d'oubli
-            text_id = self.canvas.create_text(x0 + 5, y0 + 5, anchor="nw", text=str(zone_id), fill="red", font=("Arial", 12, "bold"))
+            text_id = self.canvas.create_text(x0 + 5, y0 + 5, anchor="nw", text=str(zone.get("id", i + 1)), fill="red", font=("Arial", 12, "bold"))
 
             zone["canvas_id"] = item_id
             zone["canvas_id_text"] = text_id
 
-            self.canvas.tag_bind(item_id, "<Button-1>", self.on_zone_click)
-            self.canvas.tag_bind(text_id, "<Button-1>", self.on_zone_click)
-
         self.canvas.focus_set()
-        self.clear_zone_widgets()
-        self.display_zones()
+
+        # 🔑 Étapes importantes liées aux widgets :
+        self.ensure_zone_ids()          # s'assurer que toutes les zones ont un ID global
+        self.cleanup_zone_panel()       # retirer les widgets de la page précédente
+        self.display_zones()            # afficher les widgets pour la page courante
+
+        
+    def ensure_zone_ids(self, page_index=None):
+        """Assure que chaque zone du document a un ID unique global."""
+        page = page_index if page_index is not None else self.page_index
+        for z in self.zones.get(page, []):
+            if "id" not in z:
+                z["id"] = self.zone_id_counter
+                self.zone_id_counter += 1
 
     def ouvrir_dossier_export(self):
         export_dir = os.path.join(os.getcwd(), "trads")
@@ -413,106 +320,152 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
         self.scale = max(0.2, self.scale - 0.1)
         self.render_page(force=True)
 
-    def clear_zone_widgets(self):
-        for widget in self.zone_panel.winfo_children():
-            widget.destroy()
+    def clear_removed_zone_widgets(self):
+        current_ids = {z["id"] for z in self.zones.get(self.page_index, [])}
+        existing = self.zone_widgets.get(self.page_index, {})
+
+        # Supprimer seulement les widgets de zones qui n'existent plus
+        for zone_id in list(existing):
+            if zone_id not in current_ids:
+                existing[zone_id].destroy()
+                del existing[zone_id]
 
     @threaded
     def display_zones(self):
         if self.page_index not in self.zones:
             self.zones[self.page_index] = []
 
-        for i, zone in enumerate(self.zones[self.page_index]):
-            if "id" not in zone:
-                zone["id"] = i + 1  # ID fixe dès la première création
+        self.ensure_zone_ids()
 
-            # Crée un contexte isolé pour chaque zone
-            def create_zone_ui(index, zone_data):
-                frame = ctk.CTkFrame(self.zone_panel)
-                frame.pack(padx=5, pady=5, fill="x")
+        if not hasattr(self, "zone_widgets"):
+            self.zone_widgets = {}
 
-                label = ctk.CTkLabel(frame, text=f"Zone {zone_data['id']} - {zone_data['rect']}")
-                label.pack(anchor="w", padx=5)
+        # Nettoyer les widgets des autres pages
+        self.cleanup_zone_panel()
 
-                textbox = ctk.CTkTextbox(frame, height=100)
-                textbox.insert("1.0", zone_data["text"])
-                textbox.pack(fill="x", padx=5)
+        # --- Définir la fonction AVANT de l'utiliser ---
+        def create_zone_ui(zone_data):
+            zid = zone_data["id"]
+            frame = ctk.CTkFrame(self.zone_panel)
+            frame.pack(padx=5, pady=5, fill="x")
+            self.zone_widgets[zid] = frame  # attacher ce widget à l'ID
 
-                btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
-                btn_frame.pack(pady=4)
+            label = ctk.CTkLabel(frame, text=f"Zone {zid} - {zone_data['rect']}")
+            label.pack(anchor="w", padx=5)
 
-                save_btn = ctk.CTkButton(
-                btn_frame,
-                text="⚿",
-                text_color=self.text_color,
-                font=("Franklin Gothic Medium", 30),
-                width=30
-            )
-                save_btn.pack(side="left", padx=2)
+            textbox = ctk.CTkTextbox(frame, height=100)
+            textbox.insert("1.0", zone_data["text"])
+            textbox.edit_modified(False)
+            textbox.pack(fill="x", padx=5)
 
-                def update_zone():
-                    for z in self.zones[self.page_index]:
-                        if z.get("id") == zone_data["id"]:
-                            z["text"] = textbox.get("1.0", "end").strip()
-                            break
-                        if save_btn.winfo_exists():
-                            save_btn.configure(fg_color="red")
-                    
-                def translate_zone():
-                    txt = textbox.get("1.0", "end").strip()
-                    translated = self.translator.translate(txt)
-                    textbox.delete("1.0", "end")
-                    textbox.insert("1.0", translated)
-                    update_zone()
-                    if save_btn.winfo_exists():
-                        save_btn.configure(fg_color="#1f6aa5")
+            btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
+            btn_frame.pack(pady=4)
 
-                def delete_zone():
-                    zone_id_to_remove = zone_data["id"]
-                    # Nettoyage du canvas (rectangle + texte)
-                    for z in self.zones[self.page_index]:
-                        if z.get("id") == zone_id_to_remove:
-                            try:
-                                if "canvas_id" in z:
-                                    self.canvas.delete(z["canvas_id"])
-                                if "canvas_id_text" in z:
-                                    self.canvas.delete(z["canvas_id_text"])
-                            except Exception:
-                                pass
-                            break
+            def update_zone():
+                new_text = textbox.get("1.0", "end").strip()
+                for i, z in enumerate(self.zones[self.page_index]):
+                    if z.get("id") == zid:
+                        self.zones[self.page_index][i]["text"] = new_text
+                        break
 
-                    # Supprimer la zone de la liste
-                    self.zones[self.page_index] = [z for z in self.zones[self.page_index] if z.get("id") != zone_id_to_remove]
+            def translate_zone():
+                txt = textbox.get("1.0", "end").strip()
+                translated = self.translator.translate(txt)
+                textbox.delete("1.0", "end")
+                textbox.insert("1.0", translated)
+                update_zone()
+                if save_btn.winfo_exists():
+                    save_btn.configure(fg_color="skyblue")
 
-                    frame.destroy()
-                    self.render_page(force=True)
+            def delete_zone():
+                for z in self.zones[self.page_index]:
+                    if z.get("id") == zid:
+                        if "canvas_id" in z:
+                            self.canvas.delete(z["canvas_id"])
+                        if "canvas_id_text" in z:
+                            self.canvas.delete(z["canvas_id_text"])
+                        break
 
-                ctk.CTkButton(
-                btn_frame,
-                text="🗫",
-                text_color=self.text_color,
-                font=("Franklin Gothic Medium", 30),
-                command=translate_zone,
-                width=90
-            ).pack(side="left", padx=2)
+                self.zones[self.page_index] = [z for z in self.zones[self.page_index] if z.get("id") != zid]
+                frame.destroy()
+                if zid in self.zone_widgets:
+                    del self.zone_widgets[zid]
+                self.render_page(force=True)
 
-                ctk.CTkButton(
-                btn_frame,
-                text="⛝",
-                text_color=self.text_color,
-                font=("Franklin Gothic Medium", 30),
-                command=delete_zone,
-                width=90
-            ).pack(side="left", padx=2)
-
-                def on_text_modified(event=None):
-                    if save_btn.cget("fg_color") != "red":
-                        save_btn.configure(fg_color="red")
+            def on_text_modified(event=None):
+                if textbox.edit_modified():
+                    print(f"[Zone {zid}] Texte modifié.")
+                    zone_data["save_status"] = "edited"
+                    save_btn.configure(fg_color=color_map["edited"])
                     textbox.edit_modified(False)
+                    
+            def mark_as_saved():
+                zone_data["save_status"] = "saved"
+                save_btn.configure(fg_color=color_map["saved"])
+                    
+            #Bouton de sauvegarde
+            
+            color_map = {
+                "saved": "red",       
+                "edited": "skyblue", # bleu par défaut
+                }
 
-                textbox.bind("<<Modified>>", on_text_modified)
+            status = zone_data.get("save_status", "edited")
+            initial_color = color_map.get(status, "skyblue")
+            
+            save_btn = ctk.CTkButton(
+            btn_frame,
+            text="⚿",
+            text_color=self.text_color,
+            font=("Franklin Gothic Medium", 30),
+            width=30,
+            fg_color=initial_color,
+            command=lambda: mark_as_saved()
+        )
+            save_btn.pack(side="left", padx=2)
+            zone_data["save_button"] = save_btn
 
-            create_zone_ui(i, zone)
+            ctk.CTkButton(
+            btn_frame,
+            text="🗫",
+            text_color=self.text_color,
+            font=("Franklin Gothic Medium", 30),
+            command=translate_zone,
+            width=90,
+            fg_color="skyblue",
+        ).pack(side="left", padx=2)
+
+            ctk.CTkButton(
+            btn_frame,
+            text="⛝",
+            text_color=self.text_color,
+            font=("Franklin Gothic Medium", 30),
+            command=delete_zone,
+            width=90,
+            fg_color="skyblue",
+        ).pack(side="left", padx=2)
+
+            textbox.bind("<<Modified>>", on_text_modified)
+
+        # --- Boucle sur les zones de la page actuelle ---
+        for zone in self.zones[self.page_index]:
+            zid = zone["id"]
+            if zid in self.zone_widgets:
+                continue  # déjà affiché
+            create_zone_ui(zone)
+
+    def cleanup_zone_panel(self):
+        """Supprime les widgets de zones qui ne sont pas sur la page active."""
+        to_remove = []
+        for zid, frame in self.zone_widgets.items():
+            for page, zones in self.zones.items():
+                if any(z.get("id") == zid for z in zones):
+                    if page != self.page_index:
+                        frame.destroy()
+                        to_remove.append(zid)
+                    break
+        for zid in to_remove:
+            del self.zone_widgets[zid]
 
 
     def activate_selection(self):
@@ -577,7 +530,8 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
             "text": text,
             "canvas_id": rect_id  # <- on garde une référence vers l'objet Canvas
         })
-
+            
+        self.ensure_zone_ids()
         self.render_page(force=True)
 
     def prev_page(self):
@@ -634,11 +588,9 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
 
     @threaded
     def export_pdf(self):
-
         base_name = self.original_name
         langue = self.trad_lang_map.get().strip().lower()
-        langue_safe = unicodedata.normalize(
-            'NFKD', langue).encode('ASCII', 'ignore').decode()
+        langue_safe = unicodedata.normalize('NFKD', langue).encode('ASCII', 'ignore').decode()
 
         output_dir = os.path.join(os.getcwd(), "trads")
         os.makedirs(output_dir, exist_ok=True)
@@ -646,57 +598,58 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
         output_path = os.path.join(output_dir, output_filename)
 
         doc_out = fitz.open()
-        all_zones = []  # Collecte (bbox, text) pour tout le document
         font_sizes = []
 
-        # Étape 1 — Collecte de toutes les zones et des tailles max possibles
+        all_zones_by_page = {}
+
+        # Étape 1 — Collecter et copier chaque page UNE FOIS
         for i, page in enumerate(self.doc):
             zones = self.zones.get(i, [])
+            new_page = doc_out.new_page(width=page.rect.width, height=page.rect.height)
+
+            # Insérer le contenu de fond (rendu image)
+            pix = page.get_pixmap()
+            img = fitz.Pixmap(pix, 0) if pix.alpha else pix
+            new_page.insert_image(new_page.rect, pixmap=img)
+
             if not zones:
                 continue
 
-            doc_out.insert_pdf(self.doc, from_page=i, to_page=len(self.doc)-1)
-            new_page = doc_out[-1]
+            all_zones_by_page[i] = []
 
             for zone in zones:
                 bbox = fitz.Rect(*zone["rect"])
                 text = self.sanitize(zone["text"])
-                fontsize = self.find_max_fontsize_that_fits(
-                    new_page, bbox, text)
+                fontsize = self.find_max_fontsize_that_fits(new_page, bbox, text)
                 font_sizes.append(fontsize)
-                all_zones.append((i, bbox, text, fontsize))
+                all_zones_by_page[i].append((bbox, text, fontsize))
 
         if not font_sizes:
             messagebox.showinfo("Aucune zone", "Aucune zone à exporter.")
             return
 
-        # Étape 2 — Taille globale minimale
-        # print(font_sizes)
         global_fontsize = min(font_sizes)
 
-        # Étape 3 — Insertion uniforme
+        # Étape 2 — Insertion de texte traduit
         for i, page in enumerate(doc_out):
-            # Couleur de fond globale pour la page
+            if i not in all_zones_by_page:
+                continue
+
+            zones = all_zones_by_page[i]
+
             pix = page.get_pixmap()
-            full_image_color = Image.frombytes(
-                "RGB", [pix.width, pix.height], pix.samples)
-            dominant_rgb = self.get_dominant_color_ignore_dark(
-                full_image_color)
-            fill_color = self.lighten(
-                tuple(c / 255 for c in dominant_rgb), 0.6)
+            full_image_color = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            dominant_rgb = self.get_dominant_color_ignore_dark(full_image_color)
+            fill_color = self.lighten(tuple(c / 255 for c in dominant_rgb), 0.6)
             text_color = self.get_contrasting_text_color(dominant_rgb)
 
-            for idx, (page_index, bbox, text, max_font) in enumerate(all_zones):
-                if page_index != i:
-                    continue
-
+            for bbox, text, _ in zones:
                 fontsize = global_fontsize
                 if fontsize < 6:
-                    # print(f"[SKIP] Texte trop grand pour la zone {idx} à la page {i}")
                     continue
 
                 page.draw_rect(bbox, fill=fill_color, color=None)
-                bottom = page.insert_textbox(
+                page.insert_textbox(
                     bbox,
                     text.strip(),
                     fontsize=fontsize,
@@ -705,10 +658,10 @@ class ZoneEditorToplevel(ctk.CTkToplevel):
                     align=0,
                     render_mode=0
                 )
-                # print(f"[PAGE {i}] Zone {idx}: bbox={bbox}, font={fontsize}, inserted until y={bottom:.2f}")
 
         doc_out.save(output_path)
         messagebox.showinfo("Export réussi", f"Exporté vers :\n{output_path}")
+
 
     def bring_main_to_front(self):
         try:

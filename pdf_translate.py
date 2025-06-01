@@ -204,6 +204,7 @@ class App(ctk.CTk):
         # Open donation link
         url = "https://www.paypal.com/paypalme/noobpythondev"
         webbrowser.open(url)
+        
 
     def create_donate_button(self):
         self.button_image = ctk.CTkImage(Image.open("icon/donate.png"), size=(240, 166))
